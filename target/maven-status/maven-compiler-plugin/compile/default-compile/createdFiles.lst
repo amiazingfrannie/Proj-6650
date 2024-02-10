@@ -1,0 +1,7 @@
+org/maven/proj/CustomizedLiftRide.class
+org/maven/proj/LiftRideGenerator.class
+org/maven/proj/ResortsServlet.class
+org/maven/proj/SkierServlet.class
+org/maven/proj/LiftRideApiRunnable.class
+org/maven/proj/LiftRideClientMultiThreads.class
+org/maven/proj/HelloWorldServlet.class
