@@ -6,8 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Proj-6650" />
+        <module name="Proj-6650-MsgConsumer" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="MsgConsumer" target="19" />
+      <module name="Proj-6650-Shared" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>

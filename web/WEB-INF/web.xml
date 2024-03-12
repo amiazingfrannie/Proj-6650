@@ -5,7 +5,7 @@
          version="4.0">
   <servlet>
     <servlet-name>SkierServlet</servlet-name>
-    <servlet-class>org.maven.proj.server.SkierServlet</servlet-class>
+    <servlet-class>SkiServlet.SkierServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
@@ -15,7 +15,7 @@
 
   <servlet>
     <servlet-name>ResortsServlet</servlet-name>
-    <servlet-class>org.maven.proj.server.ResortsServlet</servlet-class>
+    <servlet-class>ResortServlet.ResortsServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ResortsServlet</servlet-name>
