@@ -15,15 +15,16 @@ import utils.CsvLogger;
  * to utilize dynamic thread
  */
 public class LiftRideFixedReq {
-  private static final int TOTAL_REQUESTS = 200_000;
+  private static final int TOTAL_REQUESTS = 200;
 
   public static void main(String[] args) throws IOException {
     resetCSVFile();
     initializeCsv();
     int minThreads = 32;
     int maxThreads = 200;
-     ApiClientManager apiClientManager = new ApiClientManager("http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war");
+//     ApiClientManager apiClientManager = new ApiClientManager("http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war");
 //    ApiClientManager apiClientManager = new ApiClientManager("http://54.90.108.31:8080/Proj-6650_war");
+    ApiClientManager apiClientManager = new ApiClientManager("http://localhost:8080/Proj_6650_war_exploded");
     CountDownLatch latch = new CountDownLatch(TOTAL_REQUESTS);
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(
@@ -49,7 +50,7 @@ public class LiftRideFixedReq {
 
     for (int i = 0; i < TOTAL_REQUESTS; i++) {
       executor.execute(() -> {
-        apiClientManager.sendLiftRideWithRetry(LiftRideGenerator.generateRandomLiftRide(), latch);
+        apiClientManager.sendLiftRideWithRetry(LiftRideGenerator.generateRandomCustomizedLiftRide(), latch);
       });
     }
 

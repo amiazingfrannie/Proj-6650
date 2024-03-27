@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import liftRideCustomized.CustomizedLiftRide;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -29,10 +30,10 @@ public class ApiClientManager {
     apiClient.setBasePath(basePath);
     this.skiersApi = new SkiersApi(apiClient);
   }
-  public void sendLiftRideWithRetry(LiftRide liftRide, CountDownLatch latch) {
-    final String URL = "http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war/skiers/SkierServlet";
+  public void sendLiftRideWithRetry(CustomizedLiftRide liftRide, CountDownLatch latch) {
+//    final String URL = "http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war/skiers/SkierServlet";
 //    final String URL = "http://54.90.108.31:8080/Proj-6650_war/skiers/SkierServlet";
-//    fi nal String URL = "http://localhost:8080/Proj_6650_war_exploded/skiers/SkierServlet";
+    final String URL = "http://localhost:8080/Proj_6650_war_exploded/skiers/SkierServlet";
 
     final int maxRetries = 5;
     boolean isRequestSuccessful = false;
@@ -64,7 +65,8 @@ public class ApiClientManager {
         if (lastStatusCode == 200 || lastStatusCode == 201) {
           isRequestSuccessful = true;
           successfulRequests.incrementAndGet();
-          System.out.println("Request successful on attempt " + i + ". Latency: " + latency + "ms");
+//          System.out.println("Request successful on attempt " + i + ". Latency: " + latency + "ms");
+          System.out.println(jsonPayload);
           break;
         } else {
           System.err.println("Attempt " + i + " failed with HTTP status: " + lastStatusCode + ". Latency: " + latency + "ms");

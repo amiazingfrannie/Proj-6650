@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Proj-6650-MsgConsumer" />
+        <module name="Proj-6650-Client" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

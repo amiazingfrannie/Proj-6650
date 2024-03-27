@@ -42,7 +42,7 @@ public class LiftRideMultiThreadsSharedApi {
 //          long requestStartTime = System.currentTimeMillis();
 //          apiClientManager.sendLiftRideWithRetry(liftRide, event.getResortID(), event.getSeasonID(), event.getDayID(), event.getSkierID(), latch, requestStartTime);
           System.out.println("[C] message: " + j);
-          apiClientManager.sendLiftRideWithRetry(liftRide,latch);
+          apiClientManager.sendLiftRideWithRetry(event,latch);
         }
       });
     }

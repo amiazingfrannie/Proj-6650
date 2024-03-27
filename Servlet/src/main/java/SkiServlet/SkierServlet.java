@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import io.swagger.client.model.LiftRide;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -20,12 +19,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import liftRideCustomized.CustomizedLiftRide;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 @WebServlet(name = "SkierServlet", asyncSupported = true)
 public class SkierServlet extends HttpServlet {
-  private static final List<LiftRide> liftRides = new ArrayList<>();
+  private static final List<CustomizedLiftRide> liftRides = new ArrayList<>();
   private static final String QUEUE_NAME = "proj_queue";
   private static final int POOL_SIZE = 10; // Number of channels in the pool
   private static GenericObjectPool<Channel> channelPool;
@@ -37,7 +37,7 @@ public class SkierServlet extends HttpServlet {
     ConnectionFactory factory = new ConnectionFactory();
     factory.setUsername("user1");
     factory.setPassword("password");
-    factory.setHost("54.221.131.110");
+    factory.setHost("18.207.126.125");
 
     try {
       Connection connection = factory.newConnection();
@@ -61,9 +61,9 @@ public class SkierServlet extends HttpServlet {
       try {
         String requestBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         Gson gson = new Gson();
-        LiftRide newLiftRide = gson.fromJson(requestBody, LiftRide.class);
+        CustomizedLiftRide newLiftRide = gson.fromJson(requestBody, CustomizedLiftRide.class);
 
-        if (!liftrideIsValid(newLiftRide)) {
+        if (!CustomizediftrideIsValid(newLiftRide)) {
           sendErrorResponse(asyncContext, HttpServletResponse.SC_BAD_REQUEST, "Invalid LiftRide object.");
           return;
         }
@@ -77,7 +77,7 @@ public class SkierServlet extends HttpServlet {
     });
   }
 
-  private void processMessageAsync(LiftRide liftRide, Gson gson, AsyncContext asyncContext) {
+  private void processMessageAsync(CustomizedLiftRide liftRide, Gson gson, AsyncContext asyncContext) {
     try {
       Channel channel = channelPool.borrowObject();
       try {
@@ -118,42 +118,6 @@ public class SkierServlet extends HttpServlet {
     }
   }
 
-  /*
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    // Start the asynchronous context
-    AsyncContext asyncContext = request.startAsync();
-    asyncContext.setTimeout(0); // Optionally set a timeout, 0 for no timeout
-
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    PrintWriter writer = response.getWriter();
-
-    String requestBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-    Gson gson = new Gson();
-    LiftRide newLiftRide = gson.fromJson(requestBody, LiftRide.class);
-
-    // Validation logic for the LiftRide object
-    if (!liftrideIsValid(newLiftRide)) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      writer.write("{\"error\": \"Invalid LiftRide object.\"}");
-      return;
-    }
-
-    try {
-      Channel channel = channelPool.borrowObject();
-      publishToQueue(channel, gson.toJson(newLiftRide));
-      channelPool.returnObject(channel);
-
-      response.setStatus(HttpServletResponse.SC_CREATED);
-      writer.write("{\"message\": \"Lift ride added successfully.\"}");
-    } catch (Exception e) {
-      e.printStackTrace(); // Ideally, use a logger
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      writer.write("{\"error\": \"Error processing request.\"}");
-    }
-  }
-*/
   private GenericObjectPool<Channel> createChannelPool(Connection connection) {
     GenericObjectPoolConfig<Channel> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(POOL_SIZE);
@@ -180,13 +144,6 @@ public class SkierServlet extends HttpServlet {
     }
   }
 
-  /*
-  private void publishToQueue(Channel channel, String message) throws IOException {
-    channel.queueDeclare(QUEUE_NAME, true, false, false, null);
-    channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-    System.out.println(" [x] Sent '" + message + "' to remote queue.");
-  }
-*/
   @Override
   public void destroy() {
     try {
@@ -197,10 +154,18 @@ public class SkierServlet extends HttpServlet {
     }
   }
 
-  private boolean liftrideIsValid(LiftRide liftRide) {
+//  private boolean liftrideIsValid(LiftRide liftRide) {
+//    return liftRide != null &&
+//        liftRide.getLiftID() != null &&
+//        liftRide.getTime() != null &&
+//        liftRide.getLiftID() > 0 &&
+//        liftRide.getTime() > 0;
+//  }
+
+  private boolean CustomizediftrideIsValid(CustomizedLiftRide liftRide) {
     return liftRide != null &&
-        liftRide.getLiftID() != null &&
-        liftRide.getTime() != null &&
+        liftRide.getLiftID() >= 0 &&
+        liftRide.getTime() >=0  &&
         liftRide.getLiftID() > 0 &&
         liftRide.getTime() > 0;
   }

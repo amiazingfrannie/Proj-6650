@@ -43,7 +43,7 @@ public class CustomizedLiftRide {
   }
 
   public String getSeasonID() {
-    return seasonID;
+    return this.seasonID;
   }
 
   public void setSeasonID(String seasonID) {
@@ -51,7 +51,7 @@ public class CustomizedLiftRide {
   }
 
   public String getDayID() {
-    return dayID;
+    return this.dayID;
   }
 
   public void setDayID(String dayID) {
