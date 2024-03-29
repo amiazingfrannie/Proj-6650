@@ -27,7 +27,7 @@ public class SkierConsumer {
   static {
     factory.setUsername("user1");
     factory.setPassword("password");
-    factory.setHost("54.82.120.124");
+    factory.setHost("3.80.227.154");
   }
 
   public static void main(String[] args) {

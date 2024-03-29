@@ -39,11 +39,10 @@ public class ResortsServlet extends HttpServlet {
       return;
     }
 
-    try (Jedis jedis = new Jedis("34.228.116.2", 6379)) {
+    try (Jedis jedis = new Jedis("18.207.120.52", 6379)) {
       jedis.auth("password");
 
       Set<String> daysSkied = jedis.smembers("skier:" + skierId + ":seasons:" + seasonId + ":days");
-      int daysSkiedCount = daysSkied.size();
 
       long totalVertical = 0;
       JsonArray daysVerticals = new JsonArray();
@@ -63,10 +62,12 @@ public class ResortsServlet extends HttpServlet {
 
       JsonArray daysLifts = new JsonArray();
       Gson gson = new Gson();
+      int totalLiftRides = 0; // Initialize counter for total lift rides
       for (String day : daysSkied) {
         String liftsKey = "skier:" + skierId + ":seasons:" + seasonId + ":days:" + day + ":lifts";
         // Use lrange to retrieve the list of lifts
         List<String> lifts = jedis.lrange(liftsKey, 0, -1);
+        totalLiftRides += lifts.size(); // Add count of lifts for this day to total
 
         JsonObject dayLifts = new JsonObject();
         dayLifts.addProperty("day", day);
@@ -89,7 +90,7 @@ public class ResortsServlet extends HttpServlet {
           .append("<table>") // The table is centered using margin-left and margin-right set to auto
           .append("<tr><th>Attribute</th><th>Value</th></tr>")
           .append("<tr><td>Skier Id</td><td>").append(skierId).append("</td></tr>")
-          .append("<tr><td>Days Skied</td><td>").append(daysSkiedCount).append("</td></tr>")
+          .append("<tr><td>Days Skied</td><td>").append(totalLiftRides).append("</td></tr>")
           .append("<tr><td>Total Vertical</td><td>").append(totalVertical).append("</td></tr>")
           .append("<tr><td>Unique Skiers</td><td>").append(uniqueSkiers).append("</td></tr>")
           .append("</table>")
@@ -98,14 +99,14 @@ public class ResortsServlet extends HttpServlet {
       htmlResponse.append("<h2>Days Verticals</h2>");
       daysVerticals.forEach(dayVertical -> {
         htmlResponse.append("<p>Day: ").append(dayVertical.getAsJsonObject().get("day").getAsString())
-            .append(", Vertical: ").append(dayVertical.getAsJsonObject().get("vertical").getAsString())
+            .append(" - Vertical Gain: ").append(dayVertical.getAsJsonObject().get("vertical").getAsString())
             .append("</p>");
       });
 
       htmlResponse.append("<h2>Days Lifts</h2>");
       daysLifts.forEach(dayLift -> {
         htmlResponse.append("<p>Day: ").append(dayLift.getAsJsonObject().get("day").getAsString())
-            .append(", Lifts: ");
+            .append(" - Lifts Used: ");
         dayLift.getAsJsonObject().get("lifts").getAsJsonArray().forEach(lift ->
             htmlResponse.append(lift.getAsString()).append(" ")
         );

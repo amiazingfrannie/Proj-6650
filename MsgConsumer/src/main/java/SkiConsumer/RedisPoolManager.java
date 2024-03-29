@@ -6,7 +6,7 @@ import java.time.Duration;
 
 public class RedisPoolManager {
   private static final JedisPoolConfig poolConfig = buildPoolConfig();
-  private static final JedisPool jedisPool = new JedisPool(poolConfig, "34.228.116.2", 6379, 2000, "password");
+  private static final JedisPool jedisPool = new JedisPool(poolConfig, "18.207.120.52", 6379, 2000, "password");
 
   private static JedisPoolConfig buildPoolConfig() {
     final JedisPoolConfig config = new JedisPoolConfig();

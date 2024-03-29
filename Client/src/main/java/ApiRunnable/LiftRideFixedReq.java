@@ -23,7 +23,7 @@ public class LiftRideFixedReq {
     int minThreads = 32;
     int maxThreads = 200;
 //     ApiClientManager apiClientManager = new ApiClientManager("http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war");
-    ApiClientManager apiClientManager = new ApiClientManager("http://54.224.141.103:8080/Proj-6650_war");
+    ApiClientManager apiClientManager = new ApiClientManager("http://44.220.130.6:8080/Proj-6650_war");
 //    ApiClientManager apiClientManager = new ApiClientManager("http://localhost:8080/Proj_6650_war_exploded");
     CountDownLatch latch = new CountDownLatch(TOTAL_REQUESTS);
 
