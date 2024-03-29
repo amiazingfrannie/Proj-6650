@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Set;
 import javax.servlet.annotation.WebServlet;
@@ -16,24 +17,29 @@ import redis.clients.jedis.Jedis;
 public class ResortsServlet extends HttpServlet {
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    response.setContentType("application/json");
+    response.setContentType("text/html"); // Set content type to HTML
+    PrintWriter out;
+
+    try {
+      out = response.getWriter();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return;
+    }
+
     String skierId = request.getParameter("skierId");
     String seasonId = request.getParameter("seasonId");
     String dayId = request.getParameter("dayId");
     String resortId = request.getParameter("resortId");
 
-    // Adding initial checks for null parameters
+    // Early return on parameter check
     if (skierId == null || seasonId == null || dayId == null || resortId == null) {
-      try {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("{\"error\":\"Missing required parameters.\"}");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      out.write("<p>Missing required parameters.</p>");
       return;
     }
 
-    try (Jedis jedis = new Jedis("18.207.168.132", 6379)) {
+    try (Jedis jedis = new Jedis("34.228.116.2", 6379)) {
       jedis.auth("password");
 
       Set<String> daysSkied = jedis.smembers("skier:" + skierId + ":seasons:" + seasonId + ":days");
@@ -42,7 +48,8 @@ public class ResortsServlet extends HttpServlet {
       long totalVertical = 0;
       JsonArray daysVerticals = new JsonArray();
       for (String day : daysSkied) {
-        String verticalKey = "skier:" + skierId + ":seasons:" + seasonId + ":days:" + day + ":vertical";
+        String verticalKey =
+            "skier:" + skierId + ":seasons:" + seasonId + ":days:" + day + ":vertical";
         String verticalStr = jedis.get(verticalKey);
 
         long vertical = verticalStr != null ? Long.parseLong(verticalStr) : 0;
@@ -70,24 +77,48 @@ public class ResortsServlet extends HttpServlet {
       String resortSkiersKey = "resort:" + resortId + ":days:" + dayId + ":skiers";
       long uniqueSkiers = jedis.scard(resortSkiersKey);
 
-      JsonObject responseJson = new JsonObject();
-      responseJson.addProperty("skierId", skierId);
-      responseJson.addProperty("daysSkied", daysSkiedCount);
-      responseJson.addProperty("totalVertical", totalVertical);
-      responseJson.add("daysVerticals", daysVerticals);
-      responseJson.add("daysLifts", daysLifts);
-      responseJson.addProperty("uniqueSkiers", uniqueSkiers);
+      StringBuilder htmlResponse = new StringBuilder();
+      htmlResponse.append("<html><head><title>Skier Information</title>")
+          .append("<style>")
+          .append("body { font-family: Arial, sans-serif; margin-top: 20px; text-align: center; }") // Reduced margin-top and added text-align
+          .append("table { width: 60%; margin-left: auto; margin-right: auto; border-collapse: collapse; }") // Ensure table is centered
+          .append("th, td { border: 1px solid #ddd; padding: 8px; }")
+          .append("th { background-color: #f2f2f2; }")
+          .append("</style></head><body>")
+          .append("<h1>Skier Report for Resort ").append(resortId).append("</h1>") // The title will inherit body's text-align: center
+          .append("<table>") // The table is centered using margin-left and margin-right set to auto
+          .append("<tr><th>Attribute</th><th>Value</th></tr>")
+          .append("<tr><td>Skier Id</td><td>").append(skierId).append("</td></tr>")
+          .append("<tr><td>Days Skied</td><td>").append(daysSkiedCount).append("</td></tr>")
+          .append("<tr><td>Total Vertical</td><td>").append(totalVertical).append("</td></tr>")
+          .append("<tr><td>Unique Skiers</td><td>").append(uniqueSkiers).append("</td></tr>")
+          .append("</table>")
+          .append("</body></html>");
 
+      htmlResponse.append("<h2>Days Verticals</h2>");
+      daysVerticals.forEach(dayVertical -> {
+        htmlResponse.append("<p>Day: ").append(dayVertical.getAsJsonObject().get("day").getAsString())
+            .append(", Vertical: ").append(dayVertical.getAsJsonObject().get("vertical").getAsString())
+            .append("</p>");
+      });
+
+      htmlResponse.append("<h2>Days Lifts</h2>");
+      daysLifts.forEach(dayLift -> {
+        htmlResponse.append("<p>Day: ").append(dayLift.getAsJsonObject().get("day").getAsString())
+            .append(", Lifts: ");
+        dayLift.getAsJsonObject().get("lifts").getAsJsonArray().forEach(lift ->
+            htmlResponse.append(lift.getAsString()).append(" ")
+        );
+        htmlResponse.append("</p>");
+      });
+
+      htmlResponse.append("</body></html>");
       response.setStatus(HttpServletResponse.SC_OK);
-      response.getWriter().write(responseJson.toString());
+      out.write(htmlResponse.toString());
     } catch (Exception e) {
-      e.printStackTrace(); // Log the full stack trace to understand the exact failure
-      try {
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write("{\"error\":\"Error fetching data from Redis: " + e.getMessage() + "\"}");
-      } catch (IOException ioException) {
-        ioException.printStackTrace();
-      }
+      e.printStackTrace(); // Log the full stack trace
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      out.write("<p>Error fetching data from Redis: " + e.getMessage() + "</p>");
     }
   }
 }

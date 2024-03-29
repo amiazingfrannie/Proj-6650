@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ public class SkierServlet extends HttpServlet {
   private static final int POOL_SIZE = 10; // Number of channels in the pool
   private static GenericObjectPool<Channel> channelPool;
   private ExecutorService executorService = Executors.newFixedThreadPool(10); // Customize the pool size as needed
+  private static final AtomicInteger messagesSent = new AtomicInteger(0);
 
   @Override
   public void init() throws ServletException {
@@ -37,14 +39,20 @@ public class SkierServlet extends HttpServlet {
     ConnectionFactory factory = new ConnectionFactory();
     factory.setUsername("user1");
     factory.setPassword("password");
-    factory.setHost("18.207.126.125");
+    factory.setHost("54.82.120.124");
 
     try {
       Connection connection = factory.newConnection();
+      // Setup publisher confirms on a new channel
+      try (Channel confirmChannel = connection.createChannel()) {
+        setupPublisherConfirms(confirmChannel);
+      }
       channelPool = createChannelPool(connection);
-      // Declare the queue here, using a channel from the pool
-      try (Channel channel = connection.createChannel()) {
+      // Declare the queue using a channel from the pool
+      try (Channel channel = channelPool.borrowObject()) {
         declareQueue(channel);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     } catch (IOException | TimeoutException e) {
       throw new ServletException("Error initializing RabbitMQ connection", e);
@@ -134,15 +142,36 @@ public class SkierServlet extends HttpServlet {
     System.out.println("Queue declared: " + QUEUE_NAME);
   }
 
+//  private void publishToQueue(Channel channel, String message) throws IOException {
+//    try {
+//      channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+//      System.out.println(" [x] Sent '" + message + "' to remote queue.");
+//    } catch (IOException e) {
+//      System.err.println("Failed to publish message: " + e.getMessage());
+//      throw e; // Rethrow or handle as appropriate for your application's error handling policy
+//    }
+//  }
+
   private void publishToQueue(Channel channel, String message) throws IOException {
     try {
       channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-      System.out.println(" [x] Sent '" + message + "' to remote queue.");
+      int count = messagesSent.incrementAndGet();
+      System.out.println(" [x] Sent '" + message + "' to remote queue. Total sent: " + count);
     } catch (IOException e) {
       System.err.println("Failed to publish message: " + e.getMessage());
-      throw e; // Rethrow or handle as appropriate for your application's error handling policy
+      throw e;
     }
   }
+
+  private void setupPublisherConfirms(Channel channel) throws IOException {
+    channel.confirmSelect();
+    channel.addConfirmListener((deliveryTag, multiple) -> {
+      System.out.println("Message with delivery tag " + deliveryTag + " confirmed.");
+    }, (deliveryTag, multiple) -> {
+      System.err.println("Warning: Message with delivery tag " + deliveryTag + " failed to send.");
+    });
+  }
+
 
   @Override
   public void destroy() {

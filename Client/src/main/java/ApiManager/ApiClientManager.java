@@ -32,8 +32,8 @@ public class ApiClientManager {
   }
   public void sendLiftRideWithRetry(CustomizedLiftRide liftRide, CountDownLatch latch) {
 //    final String URL = "http://servlet-410525632.us-east-1.elb.amazonaws.com:8080/Proj-6650_war/skiers/SkierServlet";
-//    final String URL = "http://54.90.108.31:8080/Proj-6650_war/skiers/SkierServlet";
-    final String URL = "http://localhost:8080/Proj_6650_war_exploded/skiers/SkierServlet";
+    final String URL = "http://54.224.141.103:8080/Proj-6650_war/skiers/SkierServlet";
+//    final String URL = "http://localhost:8080/Proj_6650_war_exploded/skiers/SkierServlet";
 
     final int maxRetries = 5;
     boolean isRequestSuccessful = false;
